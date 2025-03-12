@@ -38,4 +38,10 @@ typedef struct s_game
 void		alloc_map(char ***map, char *name_map, t_game *game);
 char		**get_map(char *name_map, t_game *game);
 int			is_valid_map(t_game *game);
+void		count_objects(t_game *game);
+void		init_map(t_game *game, char *name_map);
+// utils
+void		free_map(char **map);
+int			valid_path(t_game *game);
+void		flood_fill(char **map, int x, int y, t_game *game);
 #endif

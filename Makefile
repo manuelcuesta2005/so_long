@@ -13,7 +13,7 @@ PRINTF_DIR = ft_printf
 LIBFT = $(LIBFT_DIR)/libft.a
 PRINTF = $(PRINTF_DIR)/libftprintf.a
 
-SRC = so_long.c src/maps.c get_next_line/get_next_line.c
+SRC = so_long.c src/maps.c get_next_line/get_next_line.c src/utils.c
 SRC_OBJS = $(SRC:.c=.o)
 
 all: load $(NAME)
