@@ -38,16 +38,35 @@ void	flood_fill(char **map, int x, int y, t_game *game)
 	flood_fill(map, x, y - 1, game);
 }
 
-int	valid_path(t_game *game)
+char	**copy_map(char **map, t_game *game)
+{
+	char	**copy;
+	int		y;
+
+	copy = (char **)malloc(sizeof(char *) * (game->height + 1));
+	if (!copy)
+		return (NULL);
+	y = 0;
+	while (y < game->height)
+	{
+		copy[y] = ft_strdup(map[y]);
+		y++;
+	}
+	copy[y] = NULL;
+	return (copy);
+}
+
+int	is_map_playable(t_game *game)
 {
 	char	**map_copy;
+	int		collectables_left;
 	int		y;
 	int		x;
 
-	map_copy = (char **)malloc(sizeof(char *) * game->height);
-	y = 0;
-	while (y++ < game->height)
-		map_copy[y] = ft_strdup(game->map[y]);
+	collectables_left = game->collectable;
+	map_copy = copy_map(game->map, game);
+	if (!map_copy)
+		return (0);
 	y = 0;
 	while (y < game->height)
 	{
@@ -55,10 +74,7 @@ int	valid_path(t_game *game)
 		while (x < game->width)
 		{
 			if (game->map[y][x] == 'P')
-			{
 				flood_fill(map_copy, x, y, game);
-				break ;
-			}
 			x++;
 		}
 		y++;
@@ -66,13 +82,20 @@ int	valid_path(t_game *game)
 	y = 0;
 	while (y < game->height)
 	{
-		if (ft_strchr(map_copy[y], 'C') || ft_strchr(map_copy[y], 'E'))
+		x = 0;
+		while (x < game->width)
 		{
-			free_map(map_copy);
-			return (0);
+			if (game->map[y][x] == 'C' && map_copy[y][x] != 'x')
+				collectables_left--;
+			if (game->map[y][x] == 'E' && map_copy[y][x] != 'x')
+			{
+				free_map(map_copy);
+				return (0);
+			}
+			x++;
 		}
 		y++;
 	}
 	free_map(map_copy);
-	return (1);
+	return (collectables_left == 0);
 }

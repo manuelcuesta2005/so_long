@@ -31,8 +31,7 @@ void	alloc_map(char ***map, char *name_map, t_game *game)
 	line = get_next_line(fd);
 	while (line != NULL)
 	{
-		(*map)[axis_y] = ft_strdup(line);
-		free(line);
+		(*map)[axis_y] = line;
 		axis_y++;
 		line = get_next_line(fd);
 	}
@@ -43,8 +42,6 @@ void	alloc_map(char ***map, char *name_map, t_game *game)
 char	**get_map(char *name_map, t_game *game)
 {
 	int		fd;
-	int		len;
-	int		width;
 	char	*line;
 	char	**map;
 
@@ -52,20 +49,20 @@ char	**get_map(char *name_map, t_game *game)
 	if (fd < 0)
 		return (NULL);
 	game->height = 0;
-	width = 0;
+	game->width = 0;
 	line = get_next_line(fd);
+	if (line != NULL)
+	{
+		game->height++;
+		game->width = ft_strlen(line) - 1;
+	}
 	while (line != NULL)
 	{
-		len = ft_strlen(line);
-		if (line[len - 1] == '\n')
-			len--;
-		if (len > width)
-			width = len;
-		game->height++;
 		free(line);
 		line = get_next_line(fd);
+		if (line != NULL)
+			game->height++;
 	}
-	game->width = width;
 	close(fd);
 	alloc_map(&map, name_map, game);
 	return (map);
@@ -78,28 +75,26 @@ int	is_valid_map(t_game *game)
 	char	**map;
 
 	if (!game->map || game->height < 2 || game->width < 2)
-		return (1);
+		return (0);
 	y = 0;
 	map = game->map;
 	while (y < game->height)
 	{
-		if (((int)ft_strlen(map[y]) != game->width))
-			return (1);
+		if ((((int)ft_strlen(map[y]) - 1) != game->width))
+			return (0);
 		x = 0;
 		while (x < game->width)
 		{
 			if ((y == 0 || y == game->height - 1 || x == 0 || x == game->width
 					- 1) && map[y][x] != '1')
-				return (1);
+				return (0);
 			if (!ft_strchr("10PCE", map[y][x]))
-				return (1);
+				return (0);
 			x++;
 		}
 		y++;
 	}
-	if (!valid_path(game))
-		return (1);
-	return (0);
+	return (1);
 }
 
 void	count_objects(t_game *game)
@@ -129,23 +124,20 @@ void	count_objects(t_game *game)
 		y++;
 	}
 }
-void print_map(char **map)
-{
-	int i = 0;
-	while (map[i])
-	{
-		ft_printf("%s\n", map[i]);
-		i++;
-	}
-}
 
 void	init_map(t_game *game, char *name_map)
 {
 	game->map = get_map(name_map, game);
-	print_map(game->map);
-	if (!is_valid_map(game) || !game->map)
+	if (!game->map || !is_valid_map(game))
 	{
-		ft_printf("Error: El mapa no es vàlido\n");
+		ft_printf("Error: El mapa no es válido\n");
+		free_map(game->map);
+		game->map = NULL;
+		return ;
+	}
+	if (!is_map_playable(game))
+	{
+		ft_printf("Error: Hay objetos inalcanzables\n");
 		free_map(game->map);
 		game->map = NULL;
 		return ;
@@ -153,7 +145,7 @@ void	init_map(t_game *game, char *name_map)
 	count_objects(game);
 	if (game->collectable == 0 || !game->player || game->exit != 1)
 	{
-		ft_printf("Error: el mapa necesita 1 jugador, al menos 1 coleccionable y una salida");
+		ft_printf("Error: faltan objetos en el mapa\n");
 		free_map(game->map);
 		game->map = NULL;
 		return ;
