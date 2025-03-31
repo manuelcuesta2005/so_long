@@ -23,11 +23,15 @@ MLX    = $(MLX_DIR)/libmlx.a
 LIB    = -L$(MLX_DIR) -lmlx -lXext -lX11 -lm -no-pie
 
 # Archivos fuente
-SRC = so_long.c \
-      get_next_line/get_next_line.c \
+SRC = get_next_line/get_next_line.c \
+      src/map_playable.c \
       src/maps.c \
+      src/memory.c \
+      src/game.c \
+      src/player.c \
       src/utils.c \
-	  src/game.c
+	  src/window.c \
+      src/so_long.c
 
 OBJ = $(SRC:.c=.o)
 
@@ -41,44 +45,47 @@ $(NAME): $(LIBFT) $(PRINTF) $(MLX) $(OBJ)
 
 # Compilación de archivos objeto
 %.o: %.c
-	@$(CC) $(CFLAGS) -c $< -o $@
+	@$(CC) $(CFLAGS) -c $< -o $@ 
 
 # Compilación de librerías externas
 $(LIBFT):
-	@make -C $(LIBFT_DIR)
+	@make -C $(LIBFT_DIR) > /dev/null
 
 $(PRINTF):
-	@make -C $(PRINTF_DIR)
+	@make -C $(PRINTF_DIR) > /dev/null
 
 $(MLX):
-	@make -C $(MLX_DIR)
+	@make -C $(MLX_DIR) > /dev/null
 
 # Animación de carga
 load:
 	@echo "$(YELLOW)Preparando compilación...$(RESET)"
-	@i=0; while [ $$i -lt 10 ]; do \
+	@i=0; while [ $$i -lt 11 ]; do \
 		printf "\r🛠️ Compilando... [%-10s]" $$(printf "%0.s#" $$(seq 1 $$i)); \
-		sleep 0.1; \
+		sleep 0.2; \
 		i=$$((i+1)); \
 	done; echo ""
+	@sleep 2
 	@echo "$(GREEN)✨ ¡Listo para compilar!$(RESET)"
 
 # Limpieza de archivos objeto
 clean:
 	@echo "$(RED)🗑️ Borrando archivos objeto...$(RESET)"
 	@rm -f $(OBJ)
-	@make -C $(MLX_DIR) clean
-	@make -C $(LIBFT_DIR) clean
-	@make -C $(PRINTF_DIR) clean
+	@make -C $(MLX_DIR) clean > /dev/null
+	@make -C $(LIBFT_DIR) clean > /dev/null
+	@make -C $(PRINTF_DIR) clean > /dev/null
+	@sleep 2
 	@echo "$(GREEN)✔ Limpieza completada!$(RESET)"
 
 # Limpieza total
 fclean: clean
 	@echo "$(RED)💀 Eliminando ejecutable y librerías...$(RESET)"
 	@rm -f $(NAME)
-	@make -C $(MLX_DIR) clean
-	@make -C $(LIBFT_DIR) fclean
-	@make -C $(PRINTF_DIR) fclean
+	@make -C $(MLX_DIR) clean > /dev/null
+	@make -C $(LIBFT_DIR) fclean > /dev/null
+	@make -C $(PRINTF_DIR) fclean > /dev/null
+	@sleep 2
 	@echo "$(GREEN)✔ Eliminación completada!$(RESET)"
 
 # Reconstrucción total

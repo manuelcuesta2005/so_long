@@ -107,7 +107,7 @@ void	count_objects(t_game *game)
 	map = game->map;
 	game->collectable = 0;
 	game->exit = 0;
-	game->player = 0;
+	game->player = NULL;
 	while (y < game->height)
 	{
 		x = 0;
@@ -118,36 +118,30 @@ void	count_objects(t_game *game)
 			else if (map[y][x] == 'E')
 				game->exit++;
 			else if (map[y][x] == 'P')
-				game->player++;
+				init_player(&game->player, x, y);
 			x++;
 		}
 		y++;
 	}
 }
 
-void	init_map(t_game *game, char *name_map)
+void	init_map(t_base *base, char *name_map)
 {
-	game->map = get_map(name_map, game);
-	if (!game->map || !is_valid_map(game))
-	{
-		ft_printf("Error: El mapa no es válido\n");
-		free_map(game->map);
-		game->map = NULL;
-		return ;
-	}
-	if (!is_map_playable(game))
-	{
-		ft_printf("Error: Hay objetos inalcanzables\n");
-		free_map(game->map);
-		game->map = NULL;
-		return ;
-	}
-	count_objects(game);
-	if (game->collectable == 0 || !game->player || game->exit != 1)
-	{
-		ft_printf("Error: faltan objetos en el mapa\n");
-		free_map(game->map);
-		game->map = NULL;
-		return ;
-	}
+	base->game->map = NULL;
+	base->game->player = NULL;
+	base->game->collectable = 0;
+	base->game->exit = 0;
+	base->game->moves = 0;
+	base->game->map = get_map(name_map, base->game);
+	if (!base->game->map || !is_valid_map(base->game))
+		return (free_game(&base->game), free(base),
+			print_error("Error: the map isn`t valid\n"));
+	if (!is_map_playable(base->game))
+		return (free_game(&base->game), free(base),
+			print_error("Error: there are unattainable objects\n"));
+	count_objects(base->game);
+	if (base->game->collectable == 0 || !base->game->player
+		|| base->game->exit != 1)
+		return (free_game(&base->game), free(base),
+			print_error("Error: missing objects in the map\n"));
 }
